@@ -22,27 +22,13 @@ class _RegisterchildState extends State<Registerchild> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-            margin: const EdgeInsets.all(10.0),
-            child: TextField(
-              controller: emailTextController,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.email),              
-                labelText: 'Email',
-                
-                
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-          Container(
             margin: const EdgeInsets.all(10 ),
             child: TextField(
-              controller: usernameTextController,
-              
-              decoration: InputDecoration(
+              controller: usernameTextController,              
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.person),         
                 labelText: 'Username',                          
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
           ),
@@ -52,7 +38,7 @@ class _RegisterchildState extends State<Registerchild> {
               controller: passwordTextController,
               obscureText: !isPasswordVisible,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.password),
+                prefixIcon: const Icon(Icons.password),
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -82,6 +68,6 @@ class _RegisterchildState extends State<Registerchild> {
           }, child: const Text("Register")),
         ],
       ),
-    );;
+    );
   }
 }

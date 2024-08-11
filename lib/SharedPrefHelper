@@ -1,0 +1,59 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SharedPreferencesHelper {
+  static SharedPreferences? _preferences;
+
+  // Keys for your shared preferences
+  static const String _keyUsername = "username";
+  static const String _keyEmail = "email";
+  static const String _keyJwt = "jwtToken";
+  static const String _keyIsLoggedIn = "is_logged_in";
+  static const String _apiKey = "apiKey";
+  // Initialize SharedPreferences
+  static Future<void> init() async {
+    _preferences = await SharedPreferences.getInstance();
+  }
+
+  // Set username
+  static Future<void> setUsername(String username) async {
+    await _preferences?.setString(_keyUsername, username);
+  }
+
+  static Future<void> setEmail(String email) async {
+    await _preferences?.setString(_keyEmail,email);
+  }
+
+  static Future<void> setAPIKey(String apiKey) async {
+    await _preferences?.setString(_apiKey, apiKey);
+  }
+
+  static Future<void> setJWTToken(String token) async {
+    await _preferences?.setString(_keyJwt,token);
+  }
+
+  // Get username
+  static String? getUsername() {
+    return _preferences?.getString(_keyUsername);
+  }
+
+  // Set login status
+  static String? getEmail() {
+    return _preferences?.getString(_keyEmail);
+  }
+
+  
+
+  // Get login status
+  static String? getJwtToken() {
+    return _preferences?.getString(_keyJwt);
+  }
+
+  // Clear all shared preferences
+  static Future<void> clearAll() async {
+    await _preferences?.clear();
+  }
+
+  static String? getAPIKEY() {
+    return _preferences?.getString(_apiKey);
+  }
+}
