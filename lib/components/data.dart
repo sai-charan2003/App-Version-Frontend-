@@ -12,22 +12,26 @@ class Data {
     String? appName;
     int? appVersion;
     int? appVersionCode;
+    String? appDownloadLink;
 
     Data({
         this.appName,
         this.appVersion,
         this.appVersionCode,
+        this.appDownloadLink
     });
 
     factory Data.fromJson(Map<String, dynamic> json) => Data(
         appName: json["appName"],
         appVersion: json["appVersion"],
         appVersionCode: json["appVersionCode"],
+        appDownloadLink : json["appDownloadLink"]
     );
 
     Map<String, dynamic> toJson() => {
         "appName": appName,
         "appVersion": appVersion,
         "appVersionCode": appVersionCode,
+        "appDownloadLink": appDownloadLink
     };
 }

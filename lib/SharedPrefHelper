@@ -24,10 +24,12 @@ class SharedPreferencesHelper {
   }
 
   static Future<void> setAPIKey(String apiKey) async {
+    print(apiKey);
     await _preferences?.setString(_apiKey, apiKey);
   }
 
   static Future<void> setJWTToken(String token) async {
+    print(token);
     await _preferences?.setString(_keyJwt,token);
   }
 

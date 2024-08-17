@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       
       theme: brightness == Brightness.light ? theme.light() : theme.dark(),
       home: Scaffold(
-        body : Homepage()
+        body : SharedPreferencesHelper.getJwtToken()==null ? RegisterPage() : Homepage()
       ),
     );
   }
