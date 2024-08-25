@@ -6,6 +6,7 @@ import 'package:app_version_api/homePage.dart';
 import 'package:app_version_api/user.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:glossy/glossy.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -43,10 +44,43 @@ class _RegisterFieldsState extends State<RegisterFields> {
   bool isSignScreen = true;
   bool isPasswordVisible = false;
   bool isClicked = false;
+  bool isLoading = false;
+  bool hasEmailEntered = false;
+  bool hasPasswordEntered = false;
+  bool hasUserNameEntered = false;
+  final _formKey = GlobalKey<FormState>();
 
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
   final usernameTextController = TextEditingController();
+
+  @override
+  void initState() {
+    emailTextController.addListener(_updateButtonState);
+    passwordTextController.addListener(_updateButtonState);
+    usernameTextController.addListener(_updateButtonState);
+
+    super.initState();
+  }
+
+  void _updateButtonState() {
+    setState(() {
+      if (emailTextController.text.trim().isNotEmpty) {
+        hasEmailEntered = true;
+      }
+      if (passwordTextController.text.trim().isNotEmpty) {
+        hasPasswordEntered = true;
+      }
+
+      if (usernameTextController.text.trim().isNotEmpty) {
+        hasUserNameEntered = true;
+      }
+
+      if (isSignScreen == false) {
+        hasUserNameEntered = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +124,8 @@ class _RegisterFieldsState extends State<RegisterFields> {
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 40),
-      child: TextField(
+      child: TextFormField(
+        keyboardType: TextInputType.emailAddress,
         controller: controller,
         decoration: InputDecoration(
           prefixIcon: Icon(icon),
@@ -105,6 +140,14 @@ class _RegisterFieldsState extends State<RegisterFields> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 40),
       child: TextField(
+        textInputAction: TextInputAction.done,
+        keyboardType: TextInputType.visiblePassword,
+        onSubmitted: (value) {
+          // Trigger the sign-in or sign-up function when "Enter" is pressed
+          if (!isLoading && hasEmailEntered && hasPasswordEntered && hasUserNameEntered) {
+            _handleActionButtonPressed();
+          }
+        },
         controller: passwordTextController,
         obscureText: !isPasswordVisible,
         decoration: InputDecoration(
@@ -137,20 +180,43 @@ class _RegisterFieldsState extends State<RegisterFields> {
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.secondary,
           ),
-          onPressed: _handleActionButtonPressed,
-          child: Text(isSignScreen ? "Register" : "Sign In"),
+          onPressed: isLoading == false && hasEmailEntered && hasPasswordEntered && hasUserNameEntered
+              ? _handleActionButtonPressed
+              : null,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                Container(
+                    width: 12,
+                    height: 12,
+                    child: const CircularProgressIndicator(
+                      strokeCap: StrokeCap.round,
+                      strokeWidth: 3,
+                    )),
+              if (isLoading)
+                SizedBox(
+                  width: 5,
+                ),
+              Text(
+                isSignScreen ? "Register" : "Sign In",
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 
   Future<void> _handleActionButtonPressed() async {
+    setState(() {
+      isLoading = true;
+    });
     var user = User(
       emailId: emailTextController.text,
       password: passwordTextController.text,
       userName: usernameTextController.text,
     ).toJson();
-    
 
     var response = isSignScreen
         ? await BaseClient().registerUser(user).catchError((error) => print(error))
@@ -161,9 +227,15 @@ class _RegisterFieldsState extends State<RegisterFields> {
 
   void _handleResponse(dynamic response) {
     if (response is User) {
+      setState(() {
+        isLoading = false;
+      });
       _saveUserCredentials(response);
       _navigateToHomePage();
     } else {
+      setState(() {
+        isLoading = false;
+      });
       _showSnackBar(response);
     }
   }
@@ -226,6 +298,15 @@ class _RegisterFieldsState extends State<RegisterFields> {
   void _toggleSignScreen() {
     setState(() {
       isSignScreen = !isSignScreen;
+
+      // Clear validation checks and reset fields
+      emailTextController.clear();
+      passwordTextController.clear();
+      usernameTextController.clear();
+
+      hasEmailEntered = false;
+      hasPasswordEntered = false;
+      hasUserNameEntered = isSignScreen; // No username validation needed for sign-in screen
     });
   }
 }

@@ -96,8 +96,10 @@ Future<List<Data>> getData(String apiKey) async {
 
   print(response.statusCode);
 
-  if (response.statusCode == 200) {
-    print(response.body);   
+  if (response.statusCode == 200 ||response.statusCode == 201 ) {    
+    if(response.body.isEmpty){
+      return List.empty();
+    }
     List<Data> dataList = dataFromJson(response.body);
     print(dataList.first.appName);
     return dataList;
@@ -138,9 +140,102 @@ Future<bool> saveData(dynamic object) async {
     );
 
     print("Status Code: ${response.statusCode}");
+    print("object");
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200||response.statusCode == 201) {
       // Assuming your response body is a JSON object
+      var jsonResponse = jsonDecode(response.body);
+      var data = Data.fromJson(jsonResponse);
+      print("Response Data:");
+      print(data);
+
+      return true;
+    } else if (response.statusCode == 409) {
+      return false;
+    } else {
+      print("Request failed with status: ${response.statusCode}");
+      return false;
+    }
+  } catch (e) {
+    print("Error occurred: $e");
+    return false;
+  }
+}
+Future<bool> patchData(dynamic object) async {
+  print("Object:");
+  print(object);
+
+  // Ensure that the API key and JWT token are fetched correctly
+  String? apiKey = await SharedPreferencesHelper.getAPIKEY();
+  String? jwtToken = await SharedPreferencesHelper.getJwtToken();
+
+  if (apiKey == null || jwtToken == null) {
+    print("API key or JWT token is null");
+    return false;
+  }
+
+  var url = Uri.parse('$baseUrl/appData/updateAppDetails?apiKey=$apiKey');
+
+  var _payload = jsonEncode(object);
+  print("Payload:");
+  print(_payload);
+
+  try {
+    var response = await http.patch(
+      url,
+      body: _payload,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $jwtToken",
+      },
+    );
+
+    print("Status Code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {      
+      var jsonResponse = jsonDecode(response.body);
+      var data = Data.fromJson(jsonResponse);
+      print("Response Data:");
+      print(data);
+
+      return true;
+    } else if (response.statusCode == 409) {
+      return false;
+    } else {
+      print("Request failed with status: ${response.statusCode}");
+      return false;
+    }
+  } catch (e) {
+    print("Error occurred: $e");
+    return false;
+  }
+}
+Future<bool> deleteData(String uuid) async {
+
+  // Ensure that the API key and JWT token are fetched correctly
+  String? apiKey = await SharedPreferencesHelper.getAPIKEY();
+  String? jwtToken = await SharedPreferencesHelper.getJwtToken();
+
+  if (apiKey == null || jwtToken == null) {
+    print("API key or JWT token is null");
+    return false;
+  }
+
+  var url = Uri.parse('$baseUrl/appData//deleteAppDetails?apiKey=$uuid');
+
+
+  try {
+    var response = await http.patch(
+      url,      
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $jwtToken",
+      },
+    );
+
+    print("Status Code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {      
       var jsonResponse = jsonDecode(response.body);
       var data = Data.fromJson(jsonResponse);
       print("Response Data:");

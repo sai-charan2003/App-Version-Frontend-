@@ -13,25 +13,29 @@ class Data {
     int? appVersion;
     int? appVersionCode;
     String? appDownloadLink;
+    String? appUUID;
 
     Data({
         this.appName,
         this.appVersion,
         this.appVersionCode,
-        this.appDownloadLink
+        this.appDownloadLink,
+        this.appUUID
     });
 
     factory Data.fromJson(Map<String, dynamic> json) => Data(
         appName: json["appName"],
         appVersion: json["appVersion"],
         appVersionCode: json["appVersionCode"],
-        appDownloadLink : json["appDownloadLink"]
+        appDownloadLink : json["appDownloadLink"],
+        appUUID: json["appUUID"]
     );
 
     Map<String, dynamic> toJson() => {
         "appName": appName,
         "appVersion": appVersion,
         "appVersionCode": appVersionCode,
-        "appDownloadLink": appDownloadLink
+        "appDownloadLink": appDownloadLink,
+        "appUUID" : appUUID
     };
 }
