@@ -1,11 +1,13 @@
 import 'package:app_version_api/SharedPrefHelper';
+import 'package:app_version_api/components/Toast/SuccessToast.dart';
 import 'package:app_version_api/registerPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:app_version_api/base_client.dart';
-import 'package:app_version_api/components/data.dart';
+import 'package:app_version_api/data.dart';
 import 'package:glossy/glossy.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -165,6 +167,12 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
       appVersionTextEditingController.text = appData.appVersion.toString();
       appDownloadLinkTextEditingController.text = appData.appDownloadLink ?? '';
       appNameTextEditingController.text = appData.appName ?? '';
+    } else{
+      appVersionCodeTextEditingController.text=  '';
+      appVersionTextEditingController.text = '';
+      appDownloadLinkTextEditingController.text = '';
+      appNameTextEditingController.text = '';
+
     }
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -254,7 +262,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                           child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 8),
-                        ElevatedButton(
+                        FilledButton(style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondaryFixedDim,),
                           onPressed: () async {
                             if (_formKey.currentState?.validate() ?? false) {
                               setState(() {
@@ -276,6 +284,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                                 });
                                 if(response == true){
                                   widget.dataAdded();
+                                  Successtoast.show(context, "App Data added");
                                 }
                               } else {
                                 var response = await BaseClient().patchData(data).catchError((error) {
@@ -286,6 +295,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                                 });
                                 if(response == true){
                                   widget.dataAdded();
+                                   Successtoast.show(context, "Update Successful");
                                 }
                               }
                             }
@@ -293,9 +303,9 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                           child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [              
-                            isLoading? Container(width: 12,height: 12, child: const CircularProgressIndicator(strokeCap: StrokeCap.round,strokeWidth: 3,)):Container(),
+                            isLoading? Container(width: 12,height: 12, child: CircularProgressIndicator(strokeCap: StrokeCap.round,strokeWidth: 3,color: Theme.of(context).colorScheme.onSecondary,)):Container(),
                             isLoading? SizedBox(width: 5,):Container(),
-                            Text("Save",)
+                            const Text("Save")
                           ],
                         ),
                         ),
@@ -379,7 +389,10 @@ Future<void> _fetchData() async {
   } catch (error) {
     print(error);
     setState(() {
-      _error = error.toString();
+      if(error.toString().contains("Bad state: No element ")){
+        _error = error.toString();
+      }
+      
       _isLoading = false;
     });
   }
@@ -388,6 +401,7 @@ Future<void> _fetchData() async {
 
   @override
 Widget build(BuildContext context) {
+  _fetchData();
   return Column(
     children: [
       Padding(
@@ -403,7 +417,7 @@ Widget build(BuildContext context) {
           const Expanded(child: Center(child: Text('No data found')))
         else
           Expanded(
-            child: ListView.builder(
+            child: SuperListView.builder(
               itemCount: _dataList!.length,
               itemBuilder: (context, index) {
                 var dataItem = _dataList![index];
@@ -413,14 +427,20 @@ Widget build(BuildContext context) {
                   ),
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(10),
-                    title: Text(dataItem.appName ?? 'No Name'),
-                    subtitle: Text("Version: ${dataItem.appVersion}"),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      widget.onItemSelected(dataItem);
-                    },
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                        onTap: () {
+                        widget.onItemSelected(dataItem);
+                      },
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(10),
+                        title: Text(dataItem.appName ?? 'No Name'),
+                        subtitle: Text("Version: ${dataItem.appVersion}"),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                      ),
+                    ),
                   ),
                 );
               },
@@ -456,7 +476,7 @@ Widget build(BuildContext context) {
             Flexible(
               child: Text(
                 SharedPreferencesHelper.getUsername()!,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:app_version_api/SharedPrefHelper';
-import 'package:app_version_api/components/data.dart';
+import 'package:app_version_api/data.dart';
 import 'package:app_version_api/user.dart';
 import 'package:http/http.dart' as http;
 
@@ -61,29 +61,24 @@ Future<dynamic> loginUser(dynamic object) async {
     },
   );
 
-  var jsonResponse = jsonDecode(response.body);
+  // Print the response status and body for debugging
+  print("Status Code: ${response.statusCode}");
+  print("Response Body: ${response.body}");
 
-  var user = User.fromJson(jsonResponse);
-  
-  print(response);
-
-  if(response.statusCode == 200){ 
-
-  var jsonResponse = jsonDecode(response.body);
-
-  var user = User.fromJson(jsonResponse);
-  print(user);
-  return user;
-  }
-
-  else if(response.statusCode == 409){
-      return response.statusCode;
+  if (response.statusCode == 200) { 
+    // Parse JSON response if the status code is 200 (OK)
+    var jsonResponse = jsonDecode(response.body);
+    var user = User.fromJson(jsonResponse);
+    return user;
+  } else if (response.statusCode == 409) {
+    // Conflict error, return the status code or specific error message
+    return response.statusCode;
+  } else {
+    // Return the plain text response body or a custom error message
+    return response.body; 
   } 
-  else {
-  return response.body; 
-  } 
- 
 }
+
 
 Future<List<Data>> getData(String apiKey) async {
   var url = Uri.parse('$baseUrl/getData?apiKey=$apiKey');

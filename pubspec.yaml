@@ -45,6 +45,7 @@ dependencies:
   sidebarx: ^0.17.1
   easy_sidemenu: ^0.6.0
   flutter_side_menu: ^0.5.3
+  super_sliver_list: ^0.4.1
 
 dev_dependencies:
   flutter_test:

@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:app_version_api/SharedPrefHelper';
 import 'package:app_version_api/base_client.dart';
+import 'package:app_version_api/components/Toast/ErrorToast.dart';
 import 'package:app_version_api/homePage.dart';
 import 'package:app_version_api/user.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
@@ -236,7 +238,7 @@ class _RegisterFieldsState extends State<RegisterFields> {
       setState(() {
         isLoading = false;
       });
-      _showSnackBar(response);
+      ErrorToast.show(context, response);
     }
   }
 
@@ -256,21 +258,62 @@ class _RegisterFieldsState extends State<RegisterFields> {
 
   void _showSnackBar(dynamic response) {
     final snackBar = SnackBar(
-      elevation: 0,
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.transparent,
-      content: AwesomeSnackbarContent(
-        title: response == HttpStatus.conflict ? 'Email Already Exists' : 'Error occurred',
-        message: response == HttpStatus.conflict
-            ? 'Email Already Exists, please login to continue'
-            : 'An error occurred, please try again later',
-        contentType: ContentType.failure,
-      ),
-    );
+    dismissDirection: DismissDirection.up,    
+    margin: EdgeInsets.only(
+      bottom: MediaQuery.of(context).size.height-100,
+      left: MediaQuery.of(context).size.width/3,
+      right: MediaQuery.of(context).size.width/3,     
+      
+      
+    ),
+    elevation: 0,
+    behavior: SnackBarBehavior.floating,
+    backgroundColor: Colors.transparent,
+    content: Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.withOpacity(0.7), width: 1),
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      response.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
   }
 
   Widget _buildSwitchScreenText() {
