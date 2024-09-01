@@ -249,11 +249,7 @@ class _RegisterFieldsState extends State<RegisterFields> {
   }
 
   void _navigateToHomePage() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const Homepage()),
-      (route) => false,
-    );
+    Navigator.pushNamed(context, "/home");
   }
 
   void _showSnackBar(dynamic response) {

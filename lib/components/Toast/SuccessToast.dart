@@ -13,9 +13,9 @@ class Successtoast {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: EdgeInsets.all(16),
-              constraints: BoxConstraints(
-                maxWidth: 500, // Adjust if needed
+              padding: const EdgeInsets.all(16),
+              constraints: const BoxConstraints(
+                maxWidth: 400, // Adjust if needed
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.2),

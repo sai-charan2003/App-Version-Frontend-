@@ -6,16 +6,16 @@ class ErrorToast {
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 10, // Adjust this value for vertical positioning
+        top: 10, 
         left: 0,
         right: 0,
         child: Center(
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: EdgeInsets.all(16),
-              constraints: BoxConstraints(
-                maxWidth: 500, // Adjust if needed
+              padding: const EdgeInsets.all(16),
+              constraints: const BoxConstraints(
+                maxWidth: 400, 
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.2),
@@ -38,7 +38,7 @@ class ErrorToast {
                         color: Colors.red,
                         size: 24, // Adjust size if needed
                       ),
-                      SizedBox(width: 10,),
+                      const SizedBox(width: 10,),
                             Text(
                               message,
                               style: const TextStyle(

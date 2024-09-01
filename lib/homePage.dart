@@ -104,6 +104,7 @@ class _HomepageState extends State<Homepage> {
             dataAdded: (){
               setState(() {
                 isAddNew = null;
+                appData = null;
                 reloadData= true;
               });
 
@@ -120,60 +121,69 @@ class AppDetailsEdit extends StatefulWidget {
     super.key,
     required this.data,
     required this.isAddData,
-    required this.dataAdded
+    required this.dataAdded,
   });
 
   final Data? data;
-  final bool? isAddData;
+  final bool? isAddData; // Remove nullable type since it's always true/false
   final VoidCallback dataAdded;
 
   @override
   _AppDetailsEditState createState() => _AppDetailsEditState();
 }
 
-class _AppDetailsEditState extends State<AppDetailsEdit> {
+class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController appVersionTextEditingController;
   late TextEditingController appVersionCodeTextEditingController;
   late TextEditingController appNameTextEditingController;
   late TextEditingController appDownloadLinkTextEditingController;
   bool isLoading = false;
+  bool isDeleteLoading = false;
 
   @override
   void initState() {
     super.initState();
+   
+    
     appVersionTextEditingController = TextEditingController();
     appVersionCodeTextEditingController = TextEditingController();
     appNameTextEditingController = TextEditingController();
     appDownloadLinkTextEditingController = TextEditingController();
-    
 
-    if (widget.isAddData == false) {
-      final appData = widget.data!;
-      appVersionCodeTextEditingController.text = appData.appVersionCode?.toString() ?? '';
-      appVersionTextEditingController.text = appData.appVersion.toString();
-      appDownloadLinkTextEditingController.text = appData.appDownloadLink ?? '';
-      appNameTextEditingController.text = appData.appName ?? '';
+    
+  }
+
+  @override
+  void didUpdateWidget(covariant AppDetailsEdit oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.data != oldWidget.data || widget.isAddData!=oldWidget.isAddData) {
+      if (widget.isAddData == true) {
+        _clearControllers();
+      } else if(widget.isAddData == false) {
+        _initializeControllers();
+      }
     }
   }
 
-  
+  void _initializeControllers() {
+    final appData = widget.data!;
+    appVersionCodeTextEditingController.text = appData.appVersionCode?.toString() ?? '';
+    appVersionTextEditingController.text = appData.appVersion.toString();
+    appDownloadLinkTextEditingController.text = appData.appDownloadLink ?? '';
+    appNameTextEditingController.text = appData.appName ?? '';
+  }
+
+  void _clearControllers() {
+    appVersionCodeTextEditingController.clear();
+    appVersionTextEditingController.clear();
+    appDownloadLinkTextEditingController.clear();
+    appNameTextEditingController.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
-        if (widget.isAddData == false) {
-      final appData = widget.data!;
-      appVersionCodeTextEditingController.text = appData.appVersionCode?.toString() ?? '';
-      appVersionTextEditingController.text = appData.appVersion.toString();
-      appDownloadLinkTextEditingController.text = appData.appDownloadLink ?? '';
-      appNameTextEditingController.text = appData.appName ?? '';
-    } else{
-      appVersionCodeTextEditingController.text=  '';
-      appVersionTextEditingController.text = '';
-      appDownloadLinkTextEditingController.text = '';
-      appNameTextEditingController.text = '';
-
-    }
+    print(widget.isAddData);
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: widget.isAddData == null
@@ -188,22 +198,30 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.isAddData == false
-                              ? "Edit ${widget.data?.appName}"
-                              : "Add App Data",
+                          widget.isAddData==true
+                              ? "Add App Data"
+                              : "Edit ${widget.data?.appName}",
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
-                        widget.isAddData == false
-                            ? IconButton.filledTonal(
-                                onPressed: () {
-                                  BaseClient().deleteData(widget.data!.appUUID!);
-                                },
-                                icon: const Icon(Icons.delete),
-                                style: IconButton.styleFrom(
-                                  backgroundColor: Colors.redAccent,
+                        if (!(widget.isAddData==true))
+                          isDeleteLoading
+                              ? const CircularProgressIndicator()
+                              : IconButton.filledTonal(
+                                  onPressed: () async {
+                                    setState(() {
+                                      isDeleteLoading = true;
+                                    });
+                                    await BaseClient().deleteData(widget.data!.appUUID!);
+                                    widget.dataAdded();
+                                    setState(() {
+                                      isDeleteLoading = false;
+                                    });
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.redAccent,
+                                  ),
                                 ),
-                              )
-                            : Container()
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -219,7 +237,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField(
+                    _buildNumberField(
                       label: "App Version",
                       controller: appVersionTextEditingController,
                       context: context,
@@ -231,13 +249,13 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField(
+                    _buildNumberField(
                       label: "App Version Code",
                       controller: appVersionCodeTextEditingController,
                       context: context,
-                      validator: (value){
-                        return null;
-                      }, // Optional field
+                      validator: (value) {
+                        return null; // Optional field
+                      },
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
@@ -262,7 +280,10 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                           child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 8),
-                        FilledButton(style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondaryFixedDim,),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondaryFixedDim,
+                          ),
                           onPressed: () async {
                             if (_formKey.currentState?.validate() ?? false) {
                               setState(() {
@@ -270,44 +291,54 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
                               });
                               var data = Data(
                                 appName: appNameTextEditingController.text,
-                                appVersion: int.parse(appVersionTextEditingController.text),
-                                appVersionCode: int.tryParse(appVersionCodeTextEditingController.text),
+                                appVersion: double.parse(appVersionTextEditingController.text),
+                                appVersionCode: double.tryParse(appVersionCodeTextEditingController.text),
                                 appDownloadLink: appDownloadLinkTextEditingController.text,
                                 appUUID: widget.data?.appUUID,
                               );
-                              if (widget.isAddData == true) {
-                               var response = await BaseClient().saveData(data).catchError((error) {
-                                  print(error);
+                              if (widget.isAddData==true) {
+                                var response = await BaseClient().saveData(data).catchError((error) {
+                                  print("From post $error");
                                 });
                                 setState(() {
                                   isLoading = false;
                                 });
-                                if(response == true){
+                                if (response == true) {
                                   widget.dataAdded();
+                                  _clearControllers();
                                   Successtoast.show(context, "App Data added");
                                 }
                               } else {
                                 var response = await BaseClient().patchData(data).catchError((error) {
-                                  print(error);
+                                  print("From patch $error");
                                 });
                                 setState(() {
                                   isLoading = false;
                                 });
-                                if(response == true){
+                                if (response == true) {
                                   widget.dataAdded();
-                                   Successtoast.show(context, "Update Successful");
+                                  Successtoast.show(context, "Update Successful");
                                 }
                               }
                             }
                           },
                           child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [              
-                            isLoading? Container(width: 12,height: 12, child: CircularProgressIndicator(strokeCap: StrokeCap.round,strokeWidth: 3,color: Theme.of(context).colorScheme.onSecondary,)):Container(),
-                            isLoading? SizedBox(width: 5,):Container(),
-                            const Text("Save")
-                          ],
-                        ),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isLoading)
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeCap: StrokeCap.round,
+                                    strokeWidth: 3,
+                                    color: Theme.of(context).colorScheme.onSecondary,
+                                  ),
+                                ),
+                              if (isLoading) SizedBox(width: 5),
+                              const Text("Save"),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -341,7 +372,37 @@ class _AppDetailsEditState extends State<AppDetailsEdit> {
       ],
     );
   }
+
+  Widget _buildNumberField({
+    required String label,
+    required TextEditingController controller,
+    required BuildContext context,
+    required FormFieldValidator<String> validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: 8),
+        TextFormField(
+          textInputAction: TextInputAction.done,
+          keyboardType: TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')), // Allow digits and one decimal point
+          ],
+          controller: controller,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          validator: validator,
+        ),
+      ],
+    );
+  }
 }
+
 
 
 class AppDataList extends StatefulWidget {
@@ -372,138 +433,139 @@ class _AppDataListState extends State<AppDataList> {
     super.initState();
     _fetchData();
   }
+  
 
-Future<void> _fetchData() async {
-  try {
-    var dataList = await widget.baseClient.getData(SharedPreferencesHelper.getAPIKEY()!);
-    
-    setState(() {
-      _dataList = dataList; // Assign the fetched data
-      _isLoading = false;
-    });
-
-    if (_dataList == null || _dataList!.isEmpty) {
-      // Handle the case where the list is empty if necessary
-      _dataList = [];
-    }
-  } catch (error) {
-    print(error);
-    setState(() {
-      if(error.toString().contains("Bad state: No element ")){
-        _error = error.toString();
-      }
+  Future<void> _fetchData() async {
+        try {
       
-      _isLoading = false;
-    });
+      var dataList = await widget.baseClient.getData(SharedPreferencesHelper.getAPIKEY()!);
+      setState(() {        
+        _dataList = dataList;
+        _isLoading = false;
+      });
+    } catch (error) {
+      _dataList = [];
+      print(error);
+      setState(() {
+        if (error.toString().contains("Bad state: No element ")) {
+          _error = error.toString();
+        }
+        _isLoading = false;
+      });
+    }
   }
-}
-
 
   @override
-Widget build(BuildContext context) {
-  _fetchData();
-  return Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: apiKeyView(SharedPreferencesHelper.getAPIKEY(), context),
-      ),
-      if (_isLoading) 
-        const Expanded(child: Center(child: CircularProgressIndicator())),      
-      if(_error !=null)
-        Expanded(child: Center(child: Text('Error $_error'))),
-      if (!_isLoading && _error == null)
-        if (_dataList == null || _dataList!.isEmpty)
-          const Expanded(child: Center(child: Text('No data found')))
-        else
-          Expanded(
-            child: SuperListView.builder(
-              itemCount: _dataList!.length,
-              itemBuilder: (context, index) {
-                var dataItem = _dataList![index];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: InkWell(
+  void didUpdateWidget(covariant AppDataList oldWidget) {    
+      if (widget.reloadData != oldWidget.reloadData) {
+
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+   if (widget.reloadData == true) {    
+       _fetchData();
+      }
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: apiKeyView(SharedPreferencesHelper.getAPIKEY(), context),
+        ),
+        if (_isLoading)
+          const Expanded(child: Center(child: CircularProgressIndicator())),
+        if (_error != null)
+          Expanded(child: Center(child: Text('Error $_error'))),
+        if (!_isLoading && _error == null)
+          if (_dataList == null || _dataList!.isEmpty)
+            const Expanded(child: Center(child: Text('No data found')))
+          else
+            Expanded(
+              child: SuperListView.builder(
+                itemCount: _dataList!.length,
+                itemBuilder: (context, index) {
+                  var dataItem = _dataList![index];
+                  return Card(
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
                         onTap: () {
-                        widget.onItemSelected(dataItem);
-                      },
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(10),
-                        title: Text(dataItem.appName ?? 'No Name'),
-                        subtitle: Text("Version: ${dataItem.appVersion}"),
-                        trailing: const Icon(Icons.arrow_forward_ios),
+                          widget.onItemSelected(dataItem);
+                        },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(10),
+                          title: Text(dataItem.appName ?? 'No Name'),
+                          subtitle: Text("Version: ${dataItem.appVersion}"),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-      Padding(
-        padding: const EdgeInsets.only(right: 16, left: 16, top: 10),
-        child: InkWell(
-          customBorder: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          onTap: () {
-            widget.onAddNew();
-          },
-          child: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add),
-                SizedBox(width: 8),
-                Text("Add"),
-              ],
+        Padding(
+          padding: const EdgeInsets.only(right: 16, left: 16, top: 10),
+          child: InkWell(
+            customBorder: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            onTap: () {
+              widget.onAddNew();
+            },
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add),
+                  SizedBox(width: 8),
+                  Text("Add"),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(right: 16, left: 16, top: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                SharedPreferencesHelper.getUsername()!,
-                style: Theme.of(context).textTheme.bodyMedium,
-                overflow: TextOverflow.ellipsis,
+        Padding(
+          padding: const EdgeInsets.only(right: 16, left: 16, top: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  SharedPreferencesHelper.getUsername()!,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            InkWell(
-              customBorder: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              InkWell(
+                customBorder: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                onTap: () {
+                  SharedPreferencesHelper.clearAll();
+                  Navigator.pushNamed(context, "/register");
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.logout),
+                ),
               ),
-              onTap: () {
-                SharedPreferencesHelper.clearAll();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RegisterPage()),
-                  (route) => false,
-                );
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Icon(Icons.logout),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
-
+      ],
+    );
+    
+  }
   Widget apiKeyView(String? api, BuildContext context) {
   return InkWell(
     onTap: () async {
@@ -551,7 +613,5 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
-
-  
 }
+

@@ -207,7 +207,6 @@ Future<bool> patchData(dynamic object) async {
 }
 Future<bool> deleteData(String uuid) async {
 
-  // Ensure that the API key and JWT token are fetched correctly
   String? apiKey = await SharedPreferencesHelper.getAPIKEY();
   String? jwtToken = await SharedPreferencesHelper.getJwtToken();
 
@@ -216,11 +215,11 @@ Future<bool> deleteData(String uuid) async {
     return false;
   }
 
-  var url = Uri.parse('$baseUrl/appData//deleteAppDetails?apiKey=$uuid');
+  var url = Uri.parse('$baseUrl/appData/deleteAppDetails?appUUID=$uuid');
 
 
   try {
-    var response = await http.patch(
+    var response = await http.delete(
       url,      
       headers: {
         "Content-Type": "application/json",
