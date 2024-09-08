@@ -6,7 +6,7 @@ class ErrorToast {
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 10, 
+        top: 10,
         left: 0,
         right: 0,
         child: Center(
@@ -15,7 +15,7 @@ class ErrorToast {
             child: Container(
               padding: const EdgeInsets.all(16),
               constraints: const BoxConstraints(
-                maxWidth: 400, 
+                maxWidth: 400,
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.2),
@@ -26,33 +26,30 @@ class ErrorToast {
                 borderRadius: BorderRadius.circular(12),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: 
-                      
-                      
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
                         Icons.error,
                         color: Colors.red,
-                        size: 24, // Adjust size if needed
+                        size: 24,
                       ),
-                      const SizedBox(width: 10,),
-                            Text(
-                              message,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                              
-                              // Center text if needed
-                            ),
-                          ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          message,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          softWrap: true, 
+                          overflow: TextOverflow.ellipsis, 
+                          maxLines: 3, 
                         ),
                       ),
-                    
+                    ],
+                  ),
                 ),
               ),
             ),

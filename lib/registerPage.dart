@@ -1,13 +1,13 @@
-import 'dart:io';
+
 import 'dart:ui';
 
 import 'package:app_version_api/SharedPrefHelper';
 import 'package:app_version_api/base_client.dart';
 import 'package:app_version_api/components/Toast/ErrorToast.dart';
-import 'package:app_version_api/homePage.dart';
+
 import 'package:app_version_api/user.dart';
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glossy/glossy.dart';
 
@@ -103,19 +103,17 @@ class _RegisterFieldsState extends State<RegisterFields> {
 
   Widget _buildWelcomeText() {
     return Text(
-      isSignScreen ? "Welcome to app version vault" : "Welcome back",
+      isSignScreen ? "Welcome to app version tracker" : "Welcome back",
       style: Theme.of(context).textTheme.titleLarge,
     );
   }
 
   Widget _buildAppLogo() {
-    return const SizedBox(
-      height: 50,
-      width: 50,
-      child: Image(
-        image: AssetImage('assets/images/appLogo.png'),
-        fit: BoxFit.fill,
-      ),
+    return SvgPicture.asset(      
+     'assets/images/logo_svg.svg',
+      fit: BoxFit.fill,
+      width: 100,
+      height: 100
     );
   }
 
@@ -313,9 +311,10 @@ class _RegisterFieldsState extends State<RegisterFields> {
   }
 
   Widget _buildSwitchScreenText() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
+  return Center(
+    child: Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.center,
       children: [
         Text(isSignScreen ? "Already have an account?" : "Don't have an account?"),
         Padding(
@@ -331,8 +330,10 @@ class _RegisterFieldsState extends State<RegisterFields> {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
+
 
   void _toggleSignScreen() {
     setState(() {

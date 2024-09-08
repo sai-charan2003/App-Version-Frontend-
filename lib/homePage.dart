@@ -1,6 +1,6 @@
 import 'package:app_version_api/SharedPrefHelper';
+import 'package:app_version_api/components/Toast/ErrorToast.dart';
 import 'package:app_version_api/components/Toast/SuccessToast.dart';
-import 'package:app_version_api/registerPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,37 +41,56 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context) {
-    return Column(
+Widget _buildMobileLayout(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('App Details'),
+      leading: Builder(
+        builder: (context) {
+          return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          );
+        },
+      ),
+    ),
+    drawer: Drawer(
+      child: AppDataList(
+        baseClient: baseClient,
+        onAddNew: () {
+          setState(() {
+            isAddNew = true;
+            Navigator.of(context).pop(); 
+          });
+        },
+        reloadData: reloadData!,
+        onItemSelected: (Data data) {
+          setState(() {
+            isAddNew = false;
+            appData = data;
+            Navigator.of(context).pop();
+          });
+        },
+      ),
+    ),
+    body: Column(
       children: [
-        Expanded(
-          child: AppDataList(
-            baseClient: baseClient,
-            onAddNew: () {
-              setState(() {
-                isAddNew = true;
-              });
-            },
-            reloadData: reloadData!,
-            onItemSelected: (Data data) {
-              setState(() {
-                isAddNew = false;
-                appData = data;
-              });
-            },
-          ),
-        ),
-        const Divider(),
         Expanded(
           child: AppDetailsEdit(
             isAddData: isAddNew,
             data: appData,
-            dataAdded: () {},
+            dataAdded: () {
+              reloadData;
+            },
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildDesktopLayout(BuildContext context) {
     return Row(
@@ -303,10 +322,12 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                                 setState(() {
                                   isLoading = false;
                                 });
-                                if (response == true) {
+                                if (response["success"] == "true") {
                                   widget.dataAdded();
                                   _clearControllers();
-                                  Successtoast.show(context, "App Data added");
+                                  Successtoast.show(context, response["message"].toString());
+                                } else {
+                                  ErrorToast.show(context, response["message"].toString());
                                 }
                               } else {
                                 var response = await BaseClient().patchData(data).catchError((error) {
@@ -315,9 +336,12 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                                 setState(() {
                                   isLoading = false;
                                 });
-                                if (response == true) {
+                                if (response["success"] == "true") {
                                   widget.dataAdded();
-                                  Successtoast.show(context, "Update Successful");
+                                  _clearControllers();
+                                  Successtoast.show(context, response["message"].toString());
+                                } else {
+                                  ErrorToast.show(context, response["message"].toString());
                                 }
                               }
                             }
@@ -388,7 +412,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
           textInputAction: TextInputAction.done,
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')), // Allow digits and one decimal point
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
           ],
           controller: controller,
           decoration: InputDecoration(
@@ -405,8 +429,11 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
 
 
 
+
+
+
 class AppDataList extends StatefulWidget {
-  const AppDataList({
+  AppDataList({
     super.key,
     required this.baseClient,
     required this.onAddNew,
@@ -417,7 +444,7 @@ class AppDataList extends StatefulWidget {
   final BaseClient baseClient;
   final Function(Data) onItemSelected;
   final VoidCallback onAddNew;
-  final bool reloadData;
+  bool reloadData;
 
   @override
   State<AppDataList> createState() => _AppDataListState();
@@ -467,6 +494,9 @@ class _AppDataListState extends State<AppDataList> {
   Widget build(BuildContext context) {
    if (widget.reloadData == true) {    
        _fetchData();
+       setState(() {
+         widget.reloadData = false;
+       });
       }
     return Column(
       children: [

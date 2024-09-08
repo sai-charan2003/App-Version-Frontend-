@@ -5,7 +5,7 @@ import 'package:app_version_api/data.dart';
 import 'package:app_version_api/user.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = "http://127.0.0.1:9080";
+const String baseUrl = "https://version-tracker.onrender.com";
 
 class BaseClient {
   var client = http.Client();
@@ -97,6 +97,19 @@ Future<List<Data>> getData(String apiKey) async {
     }
     List<Data> dataList = dataFromJson(response.body);
     print(dataList.first.appName);
+    dataList.sort((a, b) {
+
+  if (a.appName == null && b.appName == null) {
+    return 0; 
+  } else if (a.appName == null) {
+    return -1; 
+  } else if (b.appName == null) {
+    return 1; 
+  } else {
+    return a.appName!.compareTo(b.appName!); // Compare non-null values
+  }
+});
+
     return dataList;
   } else if (response.statusCode == 404) {
     return List.empty();
@@ -105,7 +118,7 @@ Future<List<Data>> getData(String apiKey) async {
   }
 }
 
-Future<bool> saveData(dynamic object) async {
+Future<Map<String, String>> saveData(dynamic object) async {
   print("Object:");
   print(object);
 
@@ -115,7 +128,7 @@ Future<bool> saveData(dynamic object) async {
 
   if (apiKey == null || jwtToken == null) {
     print("API key or JWT token is null");
-    return false;
+    return {"success": "false", "message": "Error Occurred, Please Re-Login Again"};
   }
 
   var url = Uri.parse('$baseUrl/appData/postAppDetails?apiKey=$apiKey');
@@ -135,7 +148,7 @@ Future<bool> saveData(dynamic object) async {
     );
 
     print("Status Code: ${response.statusCode}");
-    print("object");
+    print(response.body);
 
     if (response.statusCode == 200||response.statusCode == 201) {
       // Assuming your response body is a JSON object
@@ -144,29 +157,28 @@ Future<bool> saveData(dynamic object) async {
       print("Response Data:");
       print(data);
 
-      return true;
+      return {"success": "true", "message": "Data Saved"};
     } else if (response.statusCode == 409) {
-      return false;
+      return {"success": "false", "message": response.body};
     } else {
       print("Request failed with status: ${response.statusCode}");
-      return false;
+      return {"success": "false", "message": response.body};
     }
   } catch (e) {
     print("Error occurred: $e");
-    return false;
+    return {"success": "false", "message": e.toString()};
   }
 }
-Future<bool> patchData(dynamic object) async {
+Future<Map<String,String>> patchData(dynamic object) async {
   print("Object:");
   print(object);
 
-  // Ensure that the API key and JWT token are fetched correctly
   String? apiKey = await SharedPreferencesHelper.getAPIKEY();
   String? jwtToken = await SharedPreferencesHelper.getJwtToken();
 
   if (apiKey == null || jwtToken == null) {
     print("API key or JWT token is null");
-    return false;
+    return {"success": "false", "message": "Error Occurred, Please Re-Login Again"};
   }
 
   var url = Uri.parse('$baseUrl/appData/updateAppDetails?apiKey=$apiKey');
@@ -188,21 +200,17 @@ Future<bool> patchData(dynamic object) async {
     print("Status Code: ${response.statusCode}");
 
     if (response.statusCode == 200) {      
-      var jsonResponse = jsonDecode(response.body);
-      var data = Data.fromJson(jsonResponse);
-      print("Response Data:");
-      print(data);
+      return {"success": "true", "message": "Data Saved"};
 
-      return true;
     } else if (response.statusCode == 409) {
-      return false;
+     return {"success": "false", "message": response.body};
     } else {
       print("Request failed with status: ${response.statusCode}");
-      return false;
+      return {"success": "false", "message": response.body};
     }
   } catch (e) {
     print("Error occurred: $e");
-    return false;
+    return {"success": "false", "message": e.toString()};
   }
 }
 Future<bool> deleteData(String uuid) async {

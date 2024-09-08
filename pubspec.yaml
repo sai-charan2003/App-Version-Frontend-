@@ -46,6 +46,8 @@ dependencies:
   easy_sidemenu: ^0.6.0
   flutter_side_menu: ^0.5.3
   super_sliver_list: ^0.4.1
+  shadcn_ui: ^0.8.1
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
