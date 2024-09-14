@@ -582,7 +582,10 @@ class _AppDataListState extends State<AppDataList> {
                 ),
                 onTap: () {
                   SharedPreferencesHelper.clearAll();
-                  Navigator.pushNamed(context, "/register");
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/register',
+                    (Route<dynamic> route) => false,
+                  );
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),

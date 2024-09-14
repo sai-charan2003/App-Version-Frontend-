@@ -8,7 +8,6 @@ import 'package:app_version_api/components/Toast/ErrorToast.dart';
 import 'package:app_version_api/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/widgets.dart';
 import 'package:glossy/glossy.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -24,11 +23,11 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       body: Center(
         child: GlossyContainer(
-          child: const RegisterFields(),
           width: 500,
           height: 500,
           borderRadius: BorderRadius.circular(12),
           padding: const EdgeInsets.all(8),
+          child: const RegisterFields(),
         ),
       ),
     );
@@ -143,7 +142,7 @@ class _RegisterFieldsState extends State<RegisterFields> {
         textInputAction: TextInputAction.done,
         keyboardType: TextInputType.visiblePassword,
         onSubmitted: (value) {
-          // Trigger the sign-in or sign-up function when "Enter" is pressed
+          
           if (!isLoading && hasEmailEntered && hasPasswordEntered && hasUserNameEntered) {
             _handleActionButtonPressed();
           }
@@ -247,7 +246,11 @@ class _RegisterFieldsState extends State<RegisterFields> {
   }
 
   void _navigateToHomePage() {
-    Navigator.pushNamed(context, "/home");
+        Navigator.of(context).pushNamedAndRemoveUntil(
+                 '/register',
+                 (Route<dynamic> route) => false,
+        );
+    
   }
 
   void _showSnackBar(dynamic response) {
