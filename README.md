@@ -1,16 +1,23 @@
-# app_version_api
+# App Version Tracker Frontend
 
-A new Flutter project.
+App Version Tracker is a solution for developers who don't publish their apps through the Play Store and need a way to provide updates to users. With the Version Tracker API, you can easily compare your app's local version with the latest version on the server. The service offers a dashboard to manage all your app versions. Simply update the version number in the dashboard, and the new update becomes available to all users—it's that straightforward.
 
-## Getting Started
+## How to Use the App Version Tracker API
 
-This project is a starting point for a Flutter application.
+1. **Register/Login**: First, register or log in to the [App Version Tracker](https://version-tracker-54zg.onrender.com/#/register) website.
 
-A few resources to get you started if this is your first Flutter project:
+   ![472_2x_shots_so](https://github.com/user-attachments/assets/e6e82eb6-22a2-48a1-a877-0cedfc69d822)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. **Dashboard**: After logging in, you will be greeted with a dashboard screen.
+
+   ![435_2x_shots_so](https://github.com/user-attachments/assets/73f3826b-1863-4a3a-8348-be5e0e7e1db9)
+
+
+3. **Copy API Key**: Now, simply copy the API key by clicking on the API key component.
+
+With the API key in hand, you can now utilize the App Version Tracker API in your application.
+
+For API documentation, you can visit [App Version Tracker Backend](https://github.com/sai-charan2003/App-Version-Tracker-Backend).
+
+To use the App Version Tracker, you can create your own API request service or use the Android library available at the [Version Tracker Android Library](https://github.com/sai-charan2003/Version-Tracker-Android-Library).
