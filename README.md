@@ -4,7 +4,7 @@ App Version Tracker is a solution for developers who don't publish their apps th
 
 ## How to Use the App Version Tracker API
 
-1. **Register/Login**: First, register or log in to the [App Version Tracker](https://version-tracker-54zg.onrender.com/#/register) website.
+1. **Register/Login**: First, register or log in to the [App Version Tracker](https://version-tracker.vercel.app/#/register) website.
 
    ![472_2x_shots_so](https://github.com/user-attachments/assets/e6e82eb6-22a2-48a1-a877-0cedfc69d822)
 
