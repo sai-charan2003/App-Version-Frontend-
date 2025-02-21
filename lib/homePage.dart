@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:app_version_api/base_client.dart';
 import 'package:app_version_api/data.dart';
 import 'package:glossy/glossy.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class Homepage extends StatefulWidget {
@@ -22,14 +24,13 @@ class _HomepageState extends State<Homepage> {
   bool? isAddNew;
   bool? reloadData = false;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            if (constraints.maxWidth < 600) {              // Mobile Layout
+            if (constraints.maxWidth < 600) {
               return _buildMobileLayout(context);
             } else {
               // Desktop Layout
@@ -41,56 +42,55 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-Widget _buildMobileLayout(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('App Details'),
-      leading: Builder(
-        builder: (context) {
-          return IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        },
-      ),
-    ),
-    drawer: Drawer(
-      child: AppDataList(
-        baseClient: baseClient,
-        onAddNew: () {
-          setState(() {
-            isAddNew = true;
-            Navigator.of(context).pop(); 
-          });
-        },
-        reloadData: reloadData!,
-        onItemSelected: (Data data) {
-          setState(() {
-            isAddNew = false;
-            appData = data;
-            Navigator.of(context).pop();
-          });
-        },
-      ),
-    ),
-    body: Column(
-      children: [
-        Expanded(
-          child: AppDetailsEdit(
-            isAddData: isAddNew,
-            data: appData,
-            dataAdded: () {
-              reloadData;
-            },
-          ),
+  Widget _buildMobileLayout(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('App Details'),
+        leading: Builder(
+          builder: (context) {
+            return ShadButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
-      ],
-    ),
-  );
-}
-
+      ),
+      drawer: Drawer(
+        child: AppDataList(
+          baseClient: baseClient,
+          onAddNew: () {
+            setState(() {
+              isAddNew = true;
+              Navigator.of(context).pop();
+            });
+          },
+          reloadData: reloadData!,
+          onItemSelected: (Data data) {
+            setState(() {
+              isAddNew = false;
+              appData = data;
+              Navigator.of(context).pop();
+            });
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: AppDetailsEdit(
+              isAddData: isAddNew,
+              data: appData,
+              dataAdded: () {
+                reloadData;
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildDesktopLayout(BuildContext context) {
     return Row(
@@ -120,13 +120,12 @@ Widget _buildMobileLayout(BuildContext context) {
           child: AppDetailsEdit(
             isAddData: isAddNew,
             data: appData,
-            dataAdded: (){
+            dataAdded: () {
               setState(() {
                 isAddNew = null;
                 appData = null;
-                reloadData= true;
+                reloadData = true;
               });
-
             },
           ),
         ),
@@ -144,15 +143,16 @@ class AppDetailsEdit extends StatefulWidget {
   });
 
   final Data? data;
-  final bool? isAddData; // Remove nullable type since it's always true/false
+  final bool? isAddData; 
   final VoidCallback dataAdded;
 
   @override
   _AppDetailsEditState createState() => _AppDetailsEditState();
 }
 
-class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObserver {
-  final _formKey = GlobalKey<FormState>();
+class _AppDetailsEditState extends State<AppDetailsEdit>
+    with WidgetsBindingObserver {
+  final _formKey = GlobalKey<ShadFormState>();
   late TextEditingController appVersionTextEditingController;
   late TextEditingController appVersionCodeTextEditingController;
   late TextEditingController appNameTextEditingController;
@@ -163,23 +163,21 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
   @override
   void initState() {
     super.initState();
-   
-    
+
     appVersionTextEditingController = TextEditingController();
     appVersionCodeTextEditingController = TextEditingController();
     appNameTextEditingController = TextEditingController();
     appDownloadLinkTextEditingController = TextEditingController();
-
-    
   }
 
   @override
   void didUpdateWidget(covariant AppDetailsEdit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.data != oldWidget.data || widget.isAddData!=oldWidget.isAddData) {
+    if (widget.data != oldWidget.data ||
+        widget.isAddData != oldWidget.isAddData) {
       if (widget.isAddData == true) {
         _clearControllers();
-      } else if(widget.isAddData == false) {
+      } else if (widget.isAddData == false) {
         _initializeControllers();
       }
     }
@@ -187,7 +185,8 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
 
   void _initializeControllers() {
     final appData = widget.data!;
-    appVersionCodeTextEditingController.text = appData.appVersionCode?.toString() ?? '';
+    appVersionCodeTextEditingController.text =
+        appData.appVersionCode?.toString() ?? '';
     appVersionTextEditingController.text = appData.appVersion.toString();
     appDownloadLinkTextEditingController.text = appData.appDownloadLink ?? '';
     appNameTextEditingController.text = appData.appName ?? '';
@@ -208,7 +207,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
       child: widget.isAddData == null
           ? const Center(child: Text('Select or Add App Data'))
           : SingleChildScrollView(
-              child: Form(
+              child: ShadForm(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,29 +216,27 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.isAddData==true
+                          widget.isAddData == true
                               ? "Add App Data"
                               : "Edit ${widget.data?.appName}",
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
-                        if (!(widget.isAddData==true))
+                        if (!(widget.isAddData == true))
                           isDeleteLoading
                               ? const CircularProgressIndicator()
-                              : IconButton.filledTonal(
+                              : ShadButton.destructive(
                                   onPressed: () async {
                                     setState(() {
                                       isDeleteLoading = true;
                                     });
-                                    await BaseClient().deleteData(widget.data!.appUUID!);
+                                    await BaseClient()
+                                        .deleteData(widget.data!.appUUID!);
                                     widget.dataAdded();
                                     setState(() {
                                       isDeleteLoading = false;
                                     });
                                   },
                                   icon: const Icon(Icons.delete),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.redAccent,
-                                  ),
                                 ),
                       ],
                     ),
@@ -292,31 +289,33 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        OutlinedButton(
+                        ShadButton.outline(
                           onPressed: () {
                             widget.dataAdded();
                           },
                           child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 8),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondaryFixedDim,
-                          ),
+                        ShadButton(
                           onPressed: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
+                            if (_formKey.currentState!.saveAndValidate()) {
                               setState(() {
                                 isLoading = true;
                               });
                               var data = Data(
                                 appName: appNameTextEditingController.text,
-                                appVersion: double.parse(appVersionTextEditingController.text),
-                                appVersionCode: double.tryParse(appVersionCodeTextEditingController.text),
-                                appDownloadLink: appDownloadLinkTextEditingController.text,
+                                appVersion: double.parse(
+                                    appVersionTextEditingController.text),
+                                appVersionCode: double.tryParse(
+                                    appVersionCodeTextEditingController.text),
+                                appDownloadLink:
+                                    appDownloadLinkTextEditingController.text,
                                 appUUID: widget.data?.appUUID,
                               );
-                              if (widget.isAddData==true) {
-                                var response = await BaseClient().saveData(data).catchError((error) {
+                              if (widget.isAddData == true) {
+                                var response = await BaseClient()
+                                    .saveData(data)
+                                    .catchError((error) {
                                   print("From post $error");
                                 });
                                 setState(() {
@@ -325,12 +324,16 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                                 if (response["success"] == "true") {
                                   widget.dataAdded();
                                   _clearControllers();
-                                  Successtoast.show(context, response["message"].toString());
+                                  Successtoast.show(
+                                      context, response["message"].toString());
                                 } else {
-                                  ErrorToast.show(context, response["message"].toString());
+                                  ErrorToast.show(
+                                      context, response["message"].toString());
                                 }
                               } else {
-                                var response = await BaseClient().patchData(data).catchError((error) {
+                                var response = await BaseClient()
+                                    .patchData(data)
+                                    .catchError((error) {
                                   print("From patch $error");
                                 });
                                 setState(() {
@@ -339,9 +342,11 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                                 if (response["success"] == "true") {
                                   widget.dataAdded();
                                   _clearControllers();
-                                  Successtoast.show(context, response["message"].toString());
+                                  Successtoast.show(
+                                      context, response["message"].toString());
                                 } else {
-                                  ErrorToast.show(context, response["message"].toString());
+                                  ErrorToast.show(
+                                      context, response["message"].toString());
                                 }
                               }
                             }
@@ -355,8 +360,10 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
                                   height: 12,
                                   child: CircularProgressIndicator(
                                     strokeCap: StrokeCap.round,
-                                    strokeWidth: 3,
-                                    color: Theme.of(context).colorScheme.onSecondary,
+                                    strokeWidth: 2,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primaryForeground,
                                   ),
                                 ),
                               if (isLoading) SizedBox(width: 5),
@@ -384,13 +391,8 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
       children: [
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
-        TextFormField(
+        ShadInputFormField(
           controller: controller,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
           validator: validator,
         ),
       ],
@@ -408,18 +410,13 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
       children: [
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
-        TextFormField(
+        ShadInputFormField(
           textInputAction: TextInputAction.done,
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
           ],
           controller: controller,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
           validator: validator,
         ),
       ],
@@ -427,19 +424,13 @@ class _AppDetailsEditState extends State<AppDetailsEdit> with WidgetsBindingObse
   }
 }
 
-
-
-
-
-
 class AppDataList extends StatefulWidget {
-  AppDataList({
-    super.key,
-    required this.baseClient,
-    required this.onAddNew,
-    required this.onItemSelected,
-    required this.reloadData
-  });
+  AppDataList(
+      {super.key,
+      required this.baseClient,
+      required this.onAddNew,
+      required this.onItemSelected,
+      required this.reloadData});
 
   final BaseClient baseClient;
   final Function(Data) onItemSelected;
@@ -460,13 +451,12 @@ class _AppDataListState extends State<AppDataList> {
     super.initState();
     _fetchData();
   }
-  
 
   Future<void> _fetchData() async {
-        try {
-      
-      var dataList = await widget.baseClient.getData(SharedPreferencesHelper.getAPIKEY()!);
-      setState(() {        
+    try {
+      var dataList =
+          await widget.baseClient.getData(SharedPreferencesHelper.getAPIKEY()!);
+      setState(() {
         _dataList = dataList;
         _isLoading = false;
       });
@@ -483,21 +473,19 @@ class _AppDataListState extends State<AppDataList> {
   }
 
   @override
-  void didUpdateWidget(covariant AppDataList oldWidget) {    
-      if (widget.reloadData != oldWidget.reloadData) {
-
-    }
+  void didUpdateWidget(covariant AppDataList oldWidget) {
+    if (widget.reloadData != oldWidget.reloadData) {}
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
-   if (widget.reloadData == true) {    
-       _fetchData();
-       setState(() {
-         widget.reloadData = false;
-       });
-      }
+    if (widget.reloadData == true) {
+      _fetchData();
+      setState(() {
+        widget.reloadData = false;
+      });
+    }
     return Column(
       children: [
         Padding(
@@ -522,7 +510,8 @@ class _AppDataListState extends State<AppDataList> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: InkWell(
@@ -582,10 +571,7 @@ class _AppDataListState extends State<AppDataList> {
                 ),
                 onTap: () {
                   SharedPreferencesHelper.clearAll();
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/register',
-                    (Route<dynamic> route) => false,
-                  );
+                  context.go('/register');
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
@@ -597,54 +583,49 @@ class _AppDataListState extends State<AppDataList> {
         ),
       ],
     );
-    
   }
+
   Widget apiKeyView(String? api, BuildContext context) {
-  return InkWell(
-    onTap: () async {
-      try {
-        await Clipboard.setData(ClipboardData(text: api!));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Copied to Clipboard!')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to copy to clipboard.')),
-        );
-      }
-    },
-    splashColor: Colors.transparent,
-    highlightColor: Colors.transparent,
-    hoverColor: Colors.transparent,
-    focusColor: Colors.transparent,
-    child: GlossyContainer(
-      borderRadius: BorderRadius.circular(8),
-      padding: const EdgeInsets.all(6),
-      height: 40,
-      width: double.infinity,
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              "API Key:",
-              style: Theme.of(context).textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(width: 2),
-            Flexible(
-              child: Text(
-                api ?? "Error: Please log out and log in again",
+    return InkWell(
+      onTap: () async {
+        try {
+          await Clipboard.setData(ClipboardData(text: api!));
+          Successtoast.show(context, "Copied to clipboard");
+        } catch (e) {
+          ErrorToast.show(context, "Unable to copy");
+        }
+      },
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      child: ShadCard(
+        
+        padding: const EdgeInsets.all(6),
+        height: 40,
+        width: double.infinity,
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "API Key:",
                 style: Theme.of(context).textTheme.bodySmall,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  api ?? "Error: Please log out and log in again",
+                  style: Theme.of(context).textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
-}
-

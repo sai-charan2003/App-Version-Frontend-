@@ -1,14 +1,16 @@
-import 'package:app_version_api/SharedPrefHelper';
 
+import 'package:app_version_api/SharedPrefHelper';
 import 'package:app_version_api/homePage.dart';
 import 'package:app_version_api/registerPage.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'util.dart';
 import 'theme.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();  // Ensure initialization
-  await SharedPreferencesHelper.init();  // Initialize SharedPreferences
+  WidgetsFlutterBinding.ensureInitialized();
+  await SharedPreferencesHelper.init();
   runApp(const MyApp());
 }
 
@@ -17,57 +19,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = View.of(context).platformDispatcher.platformBrightness;
-    TextTheme textTheme = createTextTheme(context, "DM Sans", "DM Sans");
-    MaterialTheme theme = MaterialTheme(textTheme);
-
-    return MaterialApp(
-      theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-
-      onGenerateRoute: (page) {
-        bool isLoggedIn = SharedPreferencesHelper.getJwtToken() != null;
-
-        if (!isLoggedIn) {
-          
-          if (page.name == "/home") {
-            return MaterialPageRoute(
-              builder: (context) => const RegisterPage(),
-              settings: const RouteSettings(name: '/register'),
-            );
-          }
-        } else {
-          
-          if (page.name == "/login" || page.name == "/register") {
-            return MaterialPageRoute(
-              builder: (context) => const Homepage(),
-              settings: const RouteSettings(name: '/home'),
-            );
-          }
+    final bool isLoggedIn = SharedPreferencesHelper.getJwtToken() != null;
+    final GoRouter router = GoRouter(
+      initialLocation: isLoggedIn ? '/home' : '/register',
+      redirect: (BuildContext context, GoRouterState state) {
+        final bool loggedIn = SharedPreferencesHelper.getJwtToken() != null;
+        if (!loggedIn && state.uri.toString() == '/home') return '/register';
+        if (loggedIn && (state.uri.toString() == '/login' || state.uri.toString() == '/register')) {
+          return '/home';
         }
-
-        
-        switch (page.name) {
-          case "/login":
-            return MaterialPageRoute(
-              builder: (context) => const RegisterPage(),
-              settings: const RouteSettings(name: "/login")
-            );
-          case "/register":
-            return MaterialPageRoute(
-              builder: (context) => const RegisterPage(),
-              settings: const RouteSettings(name: "/register")
-            );
-          case "/home":
-            return MaterialPageRoute(
-              builder: (context) => const Homepage(),
-              settings: const RouteSettings(name: "/home")
-            );
-          default:
-            return null;
-        }
+        return null;
       },
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (BuildContext context, GoRouterState state) => const Homepage(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (BuildContext context, GoRouterState state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (BuildContext context, GoRouterState state) => const RegisterPage(),
+        ),
+      ],
+    );
 
-      initialRoute: "/register", // Start with the register page
+    return ShadApp.router(
+      routerConfig: router,
+      darkTheme: ShadThemeData(
+        colorScheme: ShadColorScheme.fromName('zinc', brightness: Brightness.dark),
+        brightness: Brightness.dark,
+      ),
     );
   }
 }

@@ -1,33 +1,31 @@
-
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:app_version_api/SharedPrefHelper';
 import 'package:app_version_api/base_client.dart';
 import 'package:app_version_api/components/Toast/ErrorToast.dart';
-
 import 'package:app_version_api/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:glossy/glossy.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class RegisterPage extends StatelessWidget {
+  const RegisterPage({Key? key}) : super(key: key);
 
-  @override
-  State<RegisterPage> createState() => _RegisterPageState();
-}
-
-class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth < 600 ? screenWidth * 0.9 : 550;
+
     return Scaffold(
       body: Center(
-        child: GlossyContainer(
-          width: 500,
-          height: 500,
-          borderRadius: BorderRadius.circular(12),
-          padding: const EdgeInsets.all(8),
-          child: const RegisterFields(),
+        child: SingleChildScrollView(
+          child: ShadCard(
+            width: cardWidth.toDouble(),
+            padding: const EdgeInsets.all(16),
+            child: const RegisterFields(),
+          ),
         ),
       ),
     );
@@ -35,7 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
 }
 
 class RegisterFields extends StatefulWidget {
-  const RegisterFields({super.key});
+  const RegisterFields({Key? key}) : super(key: key);
 
   @override
   State<RegisterFields> createState() => _RegisterFieldsState();
@@ -44,12 +42,10 @@ class RegisterFields extends StatefulWidget {
 class _RegisterFieldsState extends State<RegisterFields> {
   bool isSignScreen = true;
   bool isPasswordVisible = false;
-  bool isClicked = false;
   bool isLoading = false;
   bool hasEmailEntered = false;
   bool hasPasswordEntered = false;
   bool hasUserNameEntered = false;
-  final _formKey = GlobalKey<FormState>();
 
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
@@ -57,62 +53,73 @@ class _RegisterFieldsState extends State<RegisterFields> {
 
   @override
   void initState() {
+    super.initState();
     emailTextController.addListener(_updateButtonState);
     passwordTextController.addListener(_updateButtonState);
     usernameTextController.addListener(_updateButtonState);
-
-    super.initState();
   }
 
   void _updateButtonState() {
     setState(() {
-      if (emailTextController.text.trim().isNotEmpty) {
-        hasEmailEntered = true;
-      }
-      if (passwordTextController.text.trim().isNotEmpty) {
-        hasPasswordEntered = true;
-      }
-
-      if (usernameTextController.text.trim().isNotEmpty) {
-        hasUserNameEntered = true;
-      }
-
-      if (isSignScreen == false) {
-        hasUserNameEntered = true;
-      }
+      hasEmailEntered = emailTextController.text.trim().isNotEmpty;
+      hasPasswordEntered = passwordTextController.text.trim().isNotEmpty;
+      hasUserNameEntered =
+          isSignScreen ? usernameTextController.text.trim().isNotEmpty : true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        _buildWelcomeText(),
-        _buildAppLogo(),
-        _buildTextField(controller: emailTextController, labelText: 'Email', icon: Icons.email),
-        if (isSignScreen)
-          _buildTextField(controller: usernameTextController, labelText: 'Username', icon: Icons.person),
-        _buildPasswordField(),
-        _buildActionButton(context),
-        _buildSwitchScreenText(),
-      ],
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final horizontalMargin = max(constraints.maxWidth * 0.1, 16.0);
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          _buildWelcomeText(),
+          const SizedBox(height: 10),
+          _buildAppLogo(),
+          const SizedBox(height: 20),
+          _buildTextField(
+            controller: emailTextController,
+            labelText: 'Email',
+            icon: Icons.email,
+            horizontalMargin: horizontalMargin,
+          ),
+          const SizedBox(height: 20),
+          if (isSignScreen) ...[
+            _buildTextField(
+              controller: usernameTextController,
+              labelText: 'Username',
+              icon: Icons.person,
+              horizontalMargin: horizontalMargin,
+            ),
+            const SizedBox(height: 20),
+          ],
+          _buildPasswordField(horizontalMargin: horizontalMargin),
+          const SizedBox(height: 20),
+          _buildActionButton(context, horizontalMargin: horizontalMargin),
+          const SizedBox(height: 20),
+          _buildSwitchScreenText(),
+        ],
+      );
+    });
   }
 
   Widget _buildWelcomeText() {
     return Text(
       isSignScreen ? "Welcome to app version tracker" : "Welcome back",
-      style: Theme.of(context).textTheme.titleLarge,
+      style: ShadTheme.of(context).textTheme.h3,
+      textAlign: TextAlign.center,
     );
   }
 
   Widget _buildAppLogo() {
-    return SvgPicture.asset(      
-     'assets/images/logo_svg.svg',
-      fit: BoxFit.fill,
+    return SvgPicture.asset(
+      'assets/images/logo_svg.svg',
+      fit: BoxFit.contain,
       width: 100,
-      height: 100
+      height: 100,
     );
   }
 
@@ -120,46 +127,27 @@ class _RegisterFieldsState extends State<RegisterFields> {
     required TextEditingController controller,
     required String labelText,
     required IconData icon,
+    required double horizontalMargin,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      child: TextFormField(
-        keyboardType: TextInputType.emailAddress,
+      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
+      child: ShadInput(
+        placeholder: Text(labelText),
         controller: controller,
-        decoration: InputDecoration(
-          prefixIcon: Icon(icon),
-          labelText: labelText,
-          border: const OutlineInputBorder(),
-        ),
+        keyboardType: TextInputType.emailAddress,
       ),
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildPasswordField({required double horizontalMargin}) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      child: TextField(
-        textInputAction: TextInputAction.done,
-        keyboardType: TextInputType.visiblePassword,
-        onSubmitted: (value) {
-          
-          if (!isLoading && hasEmailEntered && hasPasswordEntered && hasUserNameEntered) {
-            _handleActionButtonPressed();
-          }
-        },
+      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
+      child: ShadInput(
+        placeholder: const Text('Password'),
         controller: passwordTextController,
         obscureText: !isPasswordVisible,
-        decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.password),
-          suffixIcon: IconButton(
-            onPressed: _togglePasswordVisibility,
-            icon: Icon(
-              isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            ),
-          ),
-          labelText: 'Password',
-          border: const OutlineInputBorder(),
-        ),
+        textInputAction: TextInputAction.done,
+        keyboardType: TextInputType.visiblePassword,
       ),
     );
   }
@@ -170,38 +158,31 @@ class _RegisterFieldsState extends State<RegisterFields> {
     });
   }
 
-  Widget _buildActionButton(BuildContext context) {
+  Widget _buildActionButton(BuildContext context,
+      {required double horizontalMargin}) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-          ),
-          onPressed: isLoading == false && hasEmailEntered && hasPasswordEntered && hasUserNameEntered
-              ? _handleActionButtonPressed
-              : null,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLoading)
-                Container(
-                    width: 12,
-                    height: 12,
-                    child: const CircularProgressIndicator(
-                      strokeCap: StrokeCap.round,
-                      strokeWidth: 3,
-                    )),
-              if (isLoading)
-                SizedBox(
-                  width: 5,
+      margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 20),
+      width: double.infinity,
+      child: ShadButton(
+        enabled: !isLoading &&
+            hasEmailEntered &&
+            hasPasswordEntered &&
+            hasUserNameEntered,
+        onPressed: _handleActionButtonPressed,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isLoading)
+              SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: ShadTheme.of(context).colorScheme.primaryForeground,
                 ),
-              Text(
-                isSignScreen ? "Register" : "Sign In",
-              )
-            ],
-          ),
+              ),
+            if (isLoading) const SizedBox(width: 5),
+            Text(isSignScreen ? "Register" : "Sign In"),
+          ],
         ),
       ),
     );
@@ -211,31 +192,38 @@ class _RegisterFieldsState extends State<RegisterFields> {
     setState(() {
       isLoading = true;
     });
-    var user = User(
+
+    final user = User(
       emailId: emailTextController.text,
       password: passwordTextController.text,
       userName: usernameTextController.text,
     ).toJson();
 
-    var response = isSignScreen
-        ? await BaseClient().registerUser(user).catchError((error) => print(error))
-        : await BaseClient().loginUser(user).catchError((error) => print(error));
+    final response = isSignScreen
+        ? await BaseClient()
+            .registerUser(user)
+            .catchError((error) => print(error))
+        : await BaseClient()
+            .loginUser(user)
+            .catchError((error) => print(error));
 
     _handleResponse(response);
   }
 
   void _handleResponse(dynamic response) {
+    setState(() {
+      isLoading = false;
+    });
     if (response is User) {
-      setState(() {
-        isLoading = false;
-      });
       _saveUserCredentials(response);
       _navigateToHomePage();
     } else {
-      setState(() {
-        isLoading = false;
-      });
+      // ShadAlert.destructive(
+      //   iconSrc: LucideIcons.circleAlert,
+      //   title: Text(response),
+      //   );
       ErrorToast.show(context, response);
+     
     }
   }
 
@@ -246,110 +234,40 @@ class _RegisterFieldsState extends State<RegisterFields> {
   }
 
   void _navigateToHomePage() {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-                 '/register',
-                 (Route<dynamic> route) => false,
-        );
-    
-  }
-
-  void _showSnackBar(dynamic response) {
-    final snackBar = SnackBar(
-    dismissDirection: DismissDirection.up,    
-    margin: EdgeInsets.only(
-      bottom: MediaQuery.of(context).size.height-100,
-      left: MediaQuery.of(context).size.width/3,
-      right: MediaQuery.of(context).size.width/3,     
-      
-      
-    ),
-    elevation: 0,
-    behavior: SnackBarBehavior.floating,
-    backgroundColor: Colors.transparent,
-    content: Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.withOpacity(0.7), width: 1),
-
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      response.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+    context.go('/home');
   }
 
   Widget _buildSwitchScreenText() {
-  return Center(
-    child: Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      alignment: WrapAlignment.center,
-      children: [
-        Text(isSignScreen ? "Already have an account?" : "Don't have an account?"),
-        Padding(
-          padding: const EdgeInsets.only(left: 5),
-          child: InkWell(
+    return Center(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: WrapAlignment.center,
+        children: [
+          Text(isSignScreen
+              ? "Already have an account?"
+              : "Don't have an account?"),
+          const SizedBox(width: 5),
+          InkWell(
             onTap: _toggleSignScreen,
             child: Text(
               isSignScreen ? "Sign in" : "Create an account",
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              style: const TextStyle(decoration: TextDecoration.underline),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   void _toggleSignScreen() {
     setState(() {
       isSignScreen = !isSignScreen;
-
-      // Clear validation checks and reset fields
       emailTextController.clear();
       passwordTextController.clear();
       usernameTextController.clear();
-
       hasEmailEntered = false;
       hasPasswordEntered = false;
-      hasUserNameEntered = isSignScreen; // No username validation needed for sign-in screen
+      hasUserNameEntered = isSignScreen ? false : true;
     });
   }
 }
