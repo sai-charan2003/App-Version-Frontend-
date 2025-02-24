@@ -129,26 +129,26 @@ class _RegisterFieldsState extends State<RegisterFields> {
     required IconData icon,
     required double horizontalMargin,
   }) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-      child: ShadInput(
-        placeholder: Text(labelText),
-        controller: controller,
-        keyboardType: TextInputType.emailAddress,
-      ),
+    return ShadInput(
+           
+      placeholder: Text(labelText),
+      controller: controller,
+      keyboardType: TextInputType.emailAddress,
     );
   }
 
   Widget _buildPasswordField({required double horizontalMargin}) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-      child: ShadInput(
-        placeholder: const Text('Password'),
-        controller: passwordTextController,
-        obscureText: !isPasswordVisible,
-        textInputAction: TextInputAction.done,
-        keyboardType: TextInputType.visiblePassword,
-      ),
+    return ShadInput(
+           
+      
+      placeholder: const Text('Password'),
+      controller: passwordTextController,
+      obscureText: !isPasswordVisible,
+      textInputAction: TextInputAction.done,
+      keyboardType: TextInputType.visiblePassword,
+      onSubmitted: (_){
+        _handleActionButtonPressed();
+      },
     );
   }
 
@@ -161,7 +161,7 @@ class _RegisterFieldsState extends State<RegisterFields> {
   Widget _buildActionButton(BuildContext context,
       {required double horizontalMargin}) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 20),
+      margin: const EdgeInsets.symmetric(vertical: 20),
       width: double.infinity,
       child: ShadButton(
         enabled: !isLoading &&

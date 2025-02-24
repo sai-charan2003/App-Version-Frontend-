@@ -219,7 +219,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
                           widget.isAddData == true
                               ? "Add App Data"
                               : "Edit ${widget.data?.appName}",
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: ShadTheme.of(context).textTheme.h1,
                         ),
                         if (!(widget.isAddData == true))
                           isDeleteLoading
@@ -389,7 +389,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(label, style: ShadTheme.of(context).textTheme.p),
         const SizedBox(height: 8),
         ShadInputFormField(
           controller: controller,
@@ -408,7 +408,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(label, style: ShadTheme.of(context).textTheme.h3),
         const SizedBox(height: 8),
         ShadInputFormField(
           textInputAction: TextInputAction.done,
@@ -561,7 +561,7 @@ class _AppDataListState extends State<AppDataList> {
               Flexible(
                 child: Text(
                   SharedPreferencesHelper.getUsername()!,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: ShadTheme.of(context).textTheme.list,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -599,31 +599,25 @@ class _AppDataListState extends State<AppDataList> {
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
-      child: ShadCard(
-        
+      child: ShadCard(        
         padding: const EdgeInsets.all(6),
-        height: 40,
-        width: double.infinity,
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "API Key:",
-                style: Theme.of(context).textTheme.bodySmall,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "API Key:",
+              style: ShadTheme.of(context).textTheme.list,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Flexible(
+              child: Text(
+                api ?? "Error: Please log out and log in again",
+                style: ShadTheme.of(context).textTheme.list,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(width: 2),
-              Flexible(
-                child: Text(
-                  api ?? "Error: Please log out and log in again",
-                  style: Theme.of(context).textTheme.bodySmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
