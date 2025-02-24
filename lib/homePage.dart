@@ -219,7 +219,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
                           widget.isAddData == true
                               ? "Add App Data"
                               : "Edit ${widget.data?.appName}",
-                          style: ShadTheme.of(context).textTheme.h1,
+                          style: ShadTheme.of(context).textTheme.h3,
                         ),
                         if (!(widget.isAddData == true))
                           isDeleteLoading
@@ -389,7 +389,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: ShadTheme.of(context).textTheme.p),
+        Text(label, style: ShadTheme.of(context).textTheme.h4),
         const SizedBox(height: 8),
         ShadInputFormField(
           controller: controller,
@@ -408,7 +408,7 @@ class _AppDetailsEditState extends State<AppDetailsEdit>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: ShadTheme.of(context).textTheme.h3),
+        Text(label, style: ShadTheme.of(context).textTheme.h4),
         const SizedBox(height: 8),
         ShadInputFormField(
           textInputAction: TextInputAction.done,
