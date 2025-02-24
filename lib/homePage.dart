@@ -561,7 +561,7 @@ class _AppDataListState extends State<AppDataList> {
               Flexible(
                 child: Text(
                   SharedPreferencesHelper.getUsername()!,
-                  style: ShadTheme.of(context).textTheme.p,
+                  style: ShadTheme.of(context).textTheme.small,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -607,13 +607,13 @@ class _AppDataListState extends State<AppDataList> {
           children: [
             Text(
               "API Key:",
-              style: ShadTheme.of(context).textTheme.p,
+              style: ShadTheme.of(context).textTheme.small,
               overflow: TextOverflow.ellipsis,
             ),
             Flexible(
               child: Text(
                 api ?? "Error: Please log out and log in again",
-                style: ShadTheme.of(context).textTheme.p,
+                style: ShadTheme.of(context).textTheme.small,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
